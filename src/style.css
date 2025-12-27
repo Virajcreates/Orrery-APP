@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: #000;
+  color: white;
+  font-family: 'Outfit', sans-serif;
+}
+
+#canvas-container {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+/* Custom Scrollbar for Sidebars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Range Input Styling */
+input[type=range] {
+  -webkit-appearance: none;
+  background: transparent;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  margin-top: -6px;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+/* Planet Label - Minimalist HUD Style */
+.planet-label {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.7);
+  border-left: 2px solid #3b82f6;
+  /* Blue accent bar */
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  backdrop-filter: blur(2px);
+  transform: translate(-50%, -150%);
+  /* Center and move up */
+}
+
+/* Nav Item Hover Effect */
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-left-color: #3b82f6;
+}

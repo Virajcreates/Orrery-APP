@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NASA Eyes Replica</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Ensure specific z-indices for UI layers */
+        #ui-layer {
+            z-index: 10;
+        }
+    </style>
+    <script>
+        // Global Error Trap
+        window.onerror = function (msg, url, line, col, error) {
+            const div = document.createElement('div');
+            div.style.cssText = 'position:fixed; top:0; left:0; width:100%; background:rgba(255,0,0,0.8); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; pointer-events:none;';
+            div.innerText = `ERROR: ${msg}\nAt: ${url}:${line}:${col}\nStack: ${error ? error.stack : 'N/A'}`;
+            document.body.appendChild(div);
+            return false;
+        };
+        window.addEventListener('unhandledrejection', function (event) {
+            const div = document.createElement('div');
+            div.style.cssText = 'position:fixed; top:50px; left:0; width:100%; background:rgba(255,100,0,0.8); color:white; padding:20px; z-index:99999; font-family:monospace; white-space:pre-wrap; pointer-events:none;';
+            div.innerText = `PROMISE REJECTION: ${event.reason}`;
+            document.body.appendChild(div);
+        });
+    </script>
+</head>
+
+<body>
+    <!-- 3D Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- Main UI Container (Overlay) -->
+    <div id="ui-layer"
+        class="absolute top-0 left-0 w-full h-full pointer-events-none flex flex-col justify-between overflow-hidden">
+
+        <!-- Top Bar (Logo & Search) -->
+        <div
+            class="pointer-events-auto w-full h-16 bg-black/80 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-6">
+            <div class="flex items-center gap-4">
+                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h1 class="text-xl font-bold tracking-widest text-white uppercase font-mono">EYES ON THE SOLAR SYSTEM
+                </h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <button
+                    class="text-sm font-mono text-blue-300 hover:text-white transition-colors uppercase tracking-wider">Options</button>
+                <button
+                    class="text-sm font-mono text-blue-300 hover:text-white transition-colors uppercase tracking-wider">Help</button>
+            </div>
+        </div>
+
+        <!-- Middle Section (Flex Row) -->
+        <div class="flex-1 flex justify-between items-start relative">
+
+            <!-- LEFT PANEL: Detail / Model Card -->
+            <div id="jpl-detail-panel"
+                class="pointer-events-auto w-80 h-full bg-black/90 backdrop-blur-xl border-r border-white/10 transform -translate-x-full transition-transform duration-500 flex flex-col">
+                <!-- Header Image -->
+                <div class="h-48 bg-gray-800 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10"></div>
+                    <img id="detail-image" src="" alt="Planet"
+                        class="w-full h-full object-cover opacity-80 group-hover:scale-110 transition-transform duration-700">
+                    <button id="close-detail"
+                        class="absolute top-2 right-2 z-20 p-2 text-white/70 hover:text-white bg-black/50 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <div class="absolute bottom-4 left-4 z-20">
+                        <h2 id="detail-title" class="text-3xl font-bold text-white font-mono uppercase">EARTH</h2>
+                        <p id="detail-subtitle" class="text-blue-400 text-xs font-mono uppercase tracking-widest">
+                            Terrestrial Planet</p>
+                    </div>
+                </div>
+
+                <!-- Content Scroll -->
+                <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                    <!-- Quick Stats -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/5 p-3 rounded border border-white/10">
+                            <span class="block text-[10px] text-gray-400 uppercase font-mono mb-1">Distance from
+                                Sun</span>
+                            <span id="detail-distance" class="block text-sm font-bold text-white font-mono">1.00
+                                AU</span>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded border border-white/10">
+                            <span class="block text-[10px] text-gray-400 uppercase font-mono mb-1">Radius</span>
+                            <span id="detail-radius" class="block text-sm font-bold text-white font-mono">6,371
+                                km</span>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <h3
+                            class="text-xs font-bold text-gray-300 uppercase font-mono border-b border-white/10 pb-2 mb-3">
+                            Overview</h3>
+                        <p id="detail-desc" class="text-sm text-gray-400 leading-relaxed font-light">
+                            Our home planet is the third planet from the Sun, and the only place we know of so far
+                            that's inhabited by living things.
+                        </p>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="space-y-2">
+                        <button id="btn-panel-focus"
+                            class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-bold uppercase tracking-widest rounded transition-colors flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            Focus View
+                        </button>
+                        <button id="btn-panel-compare"
+                            class="w-full py-3 bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-bold uppercase tracking-widest rounded transition-colors border border-white/10">
+                            Compare Size
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: Navigation Menu -->
+            <div
+                class="pointer-events-auto w-64 h-full bg-black/80 backdrop-blur-md border-l border-white/10 flex flex-col">
+                <div class="p-4 border-b border-white/10">
+                    <h3 class="text-xs font-bold text-gray-400 uppercase font-mono tracking-widest">Destinations</h3>
+                </div>
+                <div id="nav-list" class="flex-1 overflow-y-auto custom-scrollbar">
+                    <!-- Items injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM BAR: Timeline -->
+        <div
+            class="pointer-events-auto h-24 bg-black/90 backdrop-blur-md border-t border-white/10 flex items-center px-8 gap-8">
+            <!-- Play Controls -->
+            <div class="flex items-center gap-4">
+                <button id="btn-reverse"
+                    class="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4zM5 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0012 16V8a1 1 0 00-1.6-.8L5 11.2z" />
+                    </svg>
+                </button>
+                <button id="btn-pause"
+                    class="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-full shadow-lg shadow-blue-900/50 transition-all transform hover:scale-105">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </button>
+                <button id="btn-play"
+                    class="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Date Display -->
+            <div class="flex flex-col items-center min-w-[200px]">
+                <span class="text-[10px] text-blue-400 uppercase font-mono tracking-widest mb-1">Current Time</span>
+                <div id="timeline-date" class="text-2xl font-mono font-bold text-white tracking-wider">2023-10-27</div>
+                <div id="timeline-time" class="text-sm font-mono text-gray-400">12:00:00 UTC</div>
+            </div>
+
+            <!-- Speed Slider -->
+            <div class="flex-1 flex items-center gap-4">
+                <span class="text-xs font-mono text-gray-400">REAL TIME</span>
+                <input type="range" id="speed-slider" min="0" max="100" value="1"
+                    class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                <span class="text-xs font-mono text-gray-400">MAX SPEED</span>
+            </div>
+
+            <button id="btn-live"
+                class="px-4 py-1 border border-blue-500 text-blue-400 font-mono text-xs font-bold uppercase rounded hover:bg-blue-500/10 transition-colors">
+                LIVE
+            </button>
+        </div>
+    </div>
+
+    <!-- Compare Size Modal -->
+    <div id="compare-modal"
+        class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center backdrop-blur-md">
+        <div class="bg-gray-900 border border-white/20 p-8 rounded-xl max-w-4xl w-full relative">
+            <button id="close-compare" class="absolute top-4 right-4 text-white/50 hover:text-white">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h2 class="text-2xl font-mono font-bold text-white mb-8 text-center uppercase tracking-widest">Size
+                Comparison</h2>
+
+            <div class="flex items-end justify-center gap-16 h-64">
+                <!-- Earth Reference -->
+                <div class="flex flex-col items-center gap-4">
+                    <div
+                        class="w-24 h-24 rounded-full bg-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.5)] flex items-center justify-center relative">
+                        <span class="absolute -bottom-8 text-xs font-mono text-gray-400">EARTH (1x)</span>
+                    </div>
+                </div>
+
+                <!-- Target Planet -->
+                <div class="flex flex-col items-center gap-4">
+                    <div id="compare-target-circle"
+                        class="rounded-full bg-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.5)] transition-all duration-500">
+                    </div>
+                    <span id="compare-target-label" class="text-xs font-mono text-gray-400 mt-4">MARS (0.53x)</span>
+                </div>
+            </div>
+
+            <p class="text-center text-gray-500 font-mono text-xs mt-12">Scale is approximate based on radius.</p>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
